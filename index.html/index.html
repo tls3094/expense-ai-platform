@@ -1,0 +1,1964 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>혁신지원사업 지출서류 AI 검토 플랫폼</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: #1e293b;
+      background: #f4f7fb;
+      font-family: Arial, "Malgun Gothic", sans-serif;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 7%;
+      color: white;
+      background: #10385f;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: #c9ddeb;
+      font-size: 13px;
+    }
+
+    main {
+      width: 92%;
+      max-width: 1320px;
+      margin: 28px auto;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+    .hidden { display: none !important; }
+
+    .box,
+    .card {
+      border: 1px solid #dbe5ee;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, .04);
+    }
+
+    .box { padding: 24px; }
+    .card { padding: 18px; }
+
+    .login-box {
+      max-width: 460px;
+      margin: 55px auto;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: white;
+      font-size: 14px;
+    }
+
+    input[readonly] {
+      background: #f1f5f9;
+    }
+
+    textarea {
+      min-height: 105px;
+      resize: vertical;
+    }
+
+    label {
+      display: block;
+      margin: 13px 0 6px;
+      color: #475569;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-primary { color: white; background: #1464d2; }
+    .btn-gray { color: #334155; background: #e4ebf3; }
+    .btn-orange { color: white; background: #d97706; }
+    .btn-green { color: white; background: #16835c; }
+    .btn-red { color: white; background: #c23b3b; }
+    .btn-logout { color: white; border: 1px solid #7ba0c1; background: transparent; }
+
+    .roles {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(280px, 430px));
+      justify-content: center;
+      gap: 22px;
+      margin-top: 40px;
+    }
+
+    .role-card {
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .role-icon {
+      display: grid;
+      width: 75px;
+      height: 75px;
+      place-items: center;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      color: #1464d2;
+      background: #e2efff;
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    .top-row,
+    .actions,
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .actions {
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .top-row h2 {
+      margin: 0;
+      color: #10385f;
+    }
+
+    .subtext {
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .number {
+      margin-top: 9px;
+      color: #10385f;
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .table-box {
+      overflow-x: auto;
+      border: 1px solid #dce5ee;
+      border-radius: 10px;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e4ebf2;
+      text-align: left;
+      vertical-align: middle;
+      font-size: 13px;
+    }
+
+    th {
+      color: #475569;
+      background: #edf4fb;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .badge-gray { color: #475569; background: #e8edf3; }
+    .badge-blue { color: #1d4ed8; background: #dbeafe; }
+    .badge-green { color: #087443; background: #d9f5e7; }
+    .badge-orange { color: #9a5600; background: #fff0d4; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .guide {
+      padding: 14px;
+      border-radius: 8px;
+      color: #24517d;
+      background: #eaf3ff;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .doc-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      align-items: center;
+      padding: 12px;
+      margin-top: 9px;
+      border: 1px dashed #8fb5df;
+      border-radius: 8px;
+      background: #f8fbff;
+      font-size: 13px;
+    }
+
+    .file-row {
+      padding: 11px 0;
+      border-bottom: 1px solid #e4ebf2;
+      font-size: 13px;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 25px;
+    }
+
+    .detail-list {
+      display: grid;
+      grid-template-columns: 145px 1fr;
+      overflow: hidden;
+      border: 1px solid #dce5ee;
+      border-radius: 8px;
+    }
+
+    .detail-list dt,
+    .detail-list dd {
+      margin: 0;
+      padding: 10px;
+      border-bottom: 1px solid #e4ebf2;
+      font-size: 13px;
+    }
+
+    .detail-list dt {
+      background: #f8fafc;
+      font-weight: bold;
+    }
+
+    .review-box {
+      padding: 16px;
+      border: 1px solid #efd49b;
+      border-radius: 10px;
+      background: #fff8e9;
+      line-height: 1.65;
+      font-size: 13px;
+    }
+
+    .finding {
+      padding: 11px;
+      margin: 10px 0;
+      border: 1px solid #ead8b6;
+      border-radius: 8px;
+      background: #fffdf8;
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 10;
+      display: none;
+      padding: 14px 17px;
+      border-radius: 8px;
+      color: white;
+      background: #10385f;
+      box-shadow: 0 5px 18px rgba(0,0,0,.2);
+      font-size: 14px;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .roles,
+      .cards,
+      .two-column,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+
+      .top-row,
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .doc-item {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>혁신지원사업 지출서류 AI 검토 플랫폼</h1>
+      <p>교수자 · 사업담당자 지출서류 신청 및 증빙서류 AI 검토</p>
+    </div>
+
+     </header>
+    <section id="rolePage" class="page">
+      <div style="text-align:center;margin-top:40px;">
+        <h2>업무 화면 선택</h2>
+        <p id="userInfo" class="subtext"></p>
+      </div>
+
+      <div class="roles">
+        <div class="box role-card">
+          <div class="role-icon">교</div>
+          <h3>교수자 화면</h3>
+          <p class="subtext">
+            지출서류 신청, 첨부파일 관리,<br>
+            AI 검토 결과 확인 및 보완 재제출
+          </p>
+          <button class="btn-primary" onclick="openRole('professor')">
+            교수자로 접속
+          </button>
+        </div>
+
+        <div id="managerRoleCard" class="box role-card hidden">
+          <div class="role-icon">사</div>
+          <h3>사업담당자 화면</h3>
+          <p class="subtext">
+            전체 신청서, 첨부파일,<br>
+            AI 검토 결과 확인 및 승인 처리
+          </p>
+          <button class="btn-primary" onclick="openRole('manager')">
+            사업담당자로 접속
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="professorPage" class="page">
+      <div class="top-row">
+        <div>
+          <h2>교수자 업무 화면</h2>
+          <p class="subtext">신청서 작성, AI 검수 요청, 보완 후 재제출</p>
+        </div>
+
+        <button class="btn-primary" onclick="openForm()">
+          + 지출서류 신청
+        </button>
+      </div>
+
+      <div class="cards">
+        <div class="card">전체 신청<div id="pTotal" class="number">0건</div></div>
+        <div class="card">임시저장<div id="pDraft" class="number">0건</div></div>
+        <div class="card">AI 검토중<div id="pReviewing" class="number">0건</div></div>
+        <div class="card">보완 요청<div id="pSupplement" class="number">0건</div></div>
+      </div>
+
+      <h3>내 신청 현황</h3>
+
+      <div class="table-box">
+        <table>
+          <thead>
+            <tr>
+              <th>접수번호</th>
+              <th>신청일</th>
+              <th>사업코드</th>
+              <th>담당교수 / 학과</th>
+              <th>집행비목</th>
+              <th>신청금액</th>
+              <th>상태</th>
+              <th>처리</th>
+            </tr>
+          </thead>
+          <tbody id="professorList"></tbody>
+        </table>
+      </div>
+
+      <div id="formBox" class="box hidden" style="margin-top:25px;">
+        <h3 id="formTitle">지출서류 신청</h3>
+
+        <div class="form-grid">
+          <div>
+            <label>사업명</label>
+            <select id="business" onchange="renderProgramTypes()"></select>
+          </div>
+
+          <div>
+            <label>프로그램 유형</label>
+            <select id="programType" onchange="renderProgramCodes()"></select>
+          </div>
+
+          <div class="full">
+            <label>사업코드 / 세부사업명</label>
+            <select id="programCode" onchange="renderExpenseCategories()"></select>
+          </div>
+
+          <div class="full">
+            <label>담당교수 / 학과</label>
+            <input id="professorDepartment" readonly>
+          </div>
+
+          <div>
+            <label>집행비목</label>
+            <select id="expenseCategory" onchange="renderSubItems()"></select>
+          </div>
+
+          <div>
+            <label>세부집행항목</label>
+            <select id="expenseSubItem" onchange="renderDocuments()"></select>
+          </div>
+
+          <div>
+            <label>총 신청금액</label>
+            <input id="totalAmount" type="number" min="0" placeholder="예: 500000">
+          </div>
+
+          <div>
+            <label>금액 단위</label>
+            <input value="원" readonly>
+          </div>
+
+          <div class="full">
+            <label>기존 첨부파일</label>
+            <div id="existingFiles" class="hidden"></div>
+          </div>
+
+          <div class="full">
+            <label>증빙서류 첨부</label>
+            <div id="documentGuide" class="guide"></div>
+            <div id="documentList"></div>
+          </div>
+
+          <div class="full">
+            <label>비고 / AI 검토 요청사항</label>
+            <textarea id="memo"></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-gray" onclick="saveRequest('임시저장')">
+            임시저장
+          </button>
+          <button class="btn-primary" onclick="saveRequest('AI 검토중')">
+            AI 검수 요청
+          </button>
+        </div>
+      </div>
+
+      <div id="professorDetail" class="two-column hidden">
+        <div class="card">
+          <h3>신청 상세</h3>
+          <dl id="professorInfo" class="detail-list"></dl>
+
+          <h3>첨부파일</h3>
+          <div id="professorFiles"></div>
+        </div>
+
+        <div class="card">
+          <h3>AI 검토 결과</h3>
+          <div id="professorAiResult"></div>
+
+          <div class="actions">
+            <button
+              id="professorEditButton"
+              class="btn-orange hidden"
+              onclick="editSelectedRequest()"
+            >
+              서류 보완 / 수정 후 재제출
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="managerPage" class="page">
+      <div class="top-row">
+        <div>
+          <h2>사업담당자 업무 화면</h2>
+          <p class="subtext">전체 신청서 및 AI 검토 결과 확인</p>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card">전체 제출<div id="mTotal" class="number">0건</div></div>
+        <div class="card">AI 검토중<div id="mReviewing" class="number">0건</div></div>
+        <div class="card">보완 요청<div id="mSupplement" class="number">0건</div></div>
+        <div class="card">지급 승인<div id="mApproved" class="number">0건</div></div>
+      </div>
+
+      <h3>지출서류 검토 목록</h3>
+
+      <div class="table-box">
+        <table>
+          <thead>
+            <tr>
+              <th>접수번호</th>
+              <th>신청자</th>
+              <th>사업코드</th>
+              <th>담당교수 / 학과</th>
+              <th>집행비목</th>
+              <th>신청금액</th>
+              <th>상태</th>
+              <th>처리</th>
+            </tr>
+          </thead>
+          <tbody id="managerList"></tbody>
+        </table>
+      </div>
+
+      <div id="managerDetail" class="two-column hidden">
+        <div class="card">
+          <h3>신청 상세</h3>
+          <dl id="managerInfo" class="detail-list"></dl>
+
+          <h3>첨부파일</h3>
+          <div id="managerFiles"></div>
+        </div>
+
+        <div class="card">
+          <h3>AI 검토 결과</h3>
+          <div id="managerAiResult"></div>
+
+          <label>담당자 보완 요청 / 의견</label>
+          <textarea id="managerComment"></textarea>
+
+          <div class="actions">
+            <button class="btn-orange" onclick="managerAction('보완 요청')">
+              교수자 보완 요청
+            </button>
+            <button class="btn-green" onclick="managerAction('지급 승인')">
+              지급 승인
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const SUPABASE_URL = "https://jzelhzhrtitfmoheulct.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_A0kCHSh-pZIYDUJdFFrh5w_bVTfe0u8";
+
+    const sb = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+    let currentUser = null;
+    let currentProfile = null;
+    let requestItems = [];
+    let editingRequestId = null;
+    let selectedRequestId = null;
+    let pollingTimer = null;
+
+    const PROGRAMS = [
+      {
+        business: "혁신지원(1유형)",
+        type: "국가자격증",
+        code: "202",
+        name: "국가자격증_토목산업기사 자격증 1차 필기 특강",
+        professor: "김효건",
+        department: "토목환경과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "국가자격증",
+        code: "203",
+        name: "국가자격증_실내건축산업기사(실기)",
+        professor: "최계영",
+        department: "인테리어디자인과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "국가자격증",
+        code: "206",
+        name: "국가자격증_임상병리사 합격 프로그램",
+        professor: "김정남",
+        department: "임상병리과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "국가자격증",
+        code: "209",
+        name: "국가자격증_사회복지사 1급 자격증취득 지원 프로그램",
+        professor: "최윤정",
+        department: "사회복지학과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "취업동아리",
+        code: "214",
+        name: "취업동아리_AI짱",
+        professor: "이재동",
+        department: "AI컴퓨터과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "창업동아리",
+        code: "218",
+        name: "창업동아리_레드그루밍",
+        professor: "송승희",
+        department: "반려동물학과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "전공보충/심화",
+        code: "221",
+        name: "전공보충/심화_전기기초공학 보충교육프로그램",
+        professor: "허동렬",
+        department: "전기과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "학술제/작품전",
+        code: "241",
+        name: "학술제/작품전_인테리어디자인과 졸업작품전시회",
+        professor: "오성진",
+        department: "인테리어디자인과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "캡스톤디자인",
+        code: "253",
+        name: "캡스톤디자인_Re-ID",
+        professor: "오성진",
+        department: "인테리어디자인과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "산업체특강",
+        code: "257",
+        name: "산업체특강_생성형 AI와 인테리어디자인",
+        professor: "최계영",
+        department: "인테리어디자인과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "현장견학",
+        code: "280",
+        name: "현장견학_토목분야 현장견학",
+        professor: "김효건",
+        department: "토목환경과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "현장견학",
+        code: "290",
+        name: "현장견학_AI EXPO 견학 프로그램",
+        professor: "계인숙",
+        department: "자율전공학과"
+      },
+      {
+        business: "혁신지원(1유형)",
+        type: "AID강좌",
+        code: "466",
+        name: "비교과 AID강좌_바로 써먹는 AI 올인원 기초과정",
+        professor: "정현서",
+        department: "비교과혁신센터"
+      }
+    ];
+
+    const CATEGORY_LABELS = {
+      meeting: "운영회의비",
+      travel: "여비",
+      promotion: "사업홍보비",
+      supplies: "수용비",
+      public: "공공요금 및 제잡비",
+      activity: "기술정보활동비",
+      prototype: "시제품제작비",
+      material: "소모성재료비"
+    };
+
+    const PROGRAM_RULES = {
+      "국가자격증": ["meeting", "promotion", "public", "activity"],
+      "취업동아리": ["meeting", "promotion", "public", "activity", "material"],
+      "창업동아리": ["meeting", "promotion", "public", "activity", "material"],
+      "전공보충/심화": ["meeting", "promotion", "public", "activity"],
+      "학술제/작품전": ["meeting", "promotion", "supplies", "public", "activity", "prototype", "material"],
+      "캡스톤디자인": ["meeting", "promotion", "supplies", "public", "activity", "prototype", "material"],
+      "산업체특강": ["meeting", "promotion", "public", "activity"],
+      "현장견학": ["travel", "promotion", "public"],
+      "AID강좌": ["promotion", "public", "activity"]
+    };
+
+    const PUBLIC_SUB_ITEMS = [
+      "다과비",
+      "단체식대",
+      "숙박비",
+      "사무용품",
+      "여행자보험",
+      "교통비(학생동행) - 버스(대절)",
+      "교통비(학생동행) - KTX·SRT·비행기",
+      "교육비·현장체험료",
+      "대회 참가비",
+      "자격증 응시료"
+    ];
+
+    const ACTIVITY_SUB_ITEMS = [
+      "내부 강사료",
+      "외부 강사료",
+      "Co-teaching",
+      "특강료",
+      "심사료"
+    ];
+
+    const DOCUMENTS = {
+      "운영회의비": [
+        "사전회의계획서",
+        "회의록(서명)",
+        "영수증 붙임철"
+      ],
+      "여비": [
+        "출장승인신청서",
+        "여비집행내역서",
+        "교통비·숙박비 영수증",
+        "출장복명서"
+      ],
+      "사업홍보비": [
+        "일반구매요구서",
+        "견적서",
+        "거래명세서",
+        "전자세금계산서",
+        "물품검수조서"
+      ],
+      "수용비": [
+        "일반구매요구서",
+        "견적서",
+        "거래명세서",
+        "전자세금계산서",
+        "물품검수조서",
+        "인쇄배부계획서"
+      ],
+      "시제품제작비": [
+        "일반구매요구서",
+        "견적서",
+        "시제품 제작 요구서",
+        "거래명세서",
+        "전자세금계산서",
+        "물품검수조서"
+      ],
+      "소모성재료비": [
+        "일반구매요구서",
+        "견적서",
+        "거래명세서",
+        "전자세금계산서",
+        "물품검수조서"
+      ],
+      "다과비": [
+        "일반구매요구서",
+        "영수증 붙임철",
+        "참여학생명단 또는 출석부",
+        "물품검수조서"
+      ],
+      "단체식대": [
+        "일반구매요구서",
+        "영수증 붙임철",
+        "참여학생명단(서명용)"
+      ],
+      "숙박비": [
+        "일반구매요구서",
+        "영업배상 책임보험 증권사본",
+        "영수증 붙임철"
+      ],
+      "사무용품": [
+        "일반구매요구서",
+        "견적서",
+        "거래명세서",
+        "전자세금계산서",
+        "물품검수조서"
+      ],
+      "여행자보험": [
+        "일반구매요구서",
+        "확정 참여학생명단",
+        "명단 포함 보험내역서"
+      ],
+      "교통비(학생동행) - 버스(대절)": [
+        "일반구매요구서",
+        "견적서",
+        "보험증권사본",
+        "차량보유 현황표",
+        "거래명세서",
+        "전자세금계산서",
+        "사업자등록증",
+        "계좌입금통장사본"
+      ],
+      "교통비(학생동행) - KTX·SRT·비행기": [
+        "일반구매요구서",
+        "탑승자명단 포함 승차권 및 영수증",
+        "참여학생명단"
+      ],
+      "교육비·현장체험료": [
+        "일반구매요구서",
+        "교육·체험 견적서",
+        "교육일정표",
+        "거래명세서",
+        "전자세금계산서",
+        "교육 완료 확인서",
+        "참여학생명단",
+        "교육사진"
+      ],
+      "대회 참가비": [
+        "일반구매요구서",
+        "대회 안내문",
+        "참가비 영수증",
+        "참여학생명단"
+      ],
+      "자격증 응시료": [
+        "자격증 시험 안내문",
+        "응시료 영수증",
+        "응시 확인서",
+        "참여학생명단"
+      ],
+      "내부 강사료": [
+        "기술정보활동비 지급신청서",
+        "비정기 강의계획서",
+        "참여학생명단",
+        "출석부"
+      ],
+      "외부 강사료": [
+        "기술정보활동비 지급신청서",
+        "비정기 강의계획서",
+        "개인정보 제공·활용 동의서",
+        "참여학생명단",
+        "출석부",
+        "재직·경력증명서",
+        "계좌입금통장 사본"
+      ],
+      "Co-teaching": [
+        "기술정보활동비 지급신청서",
+        "Co-teaching 지도일지",
+        "개인정보 제공·활용 동의서",
+        "참여학생명단",
+        "재직·경력증명서",
+        "계좌입금통장 사본"
+      ],
+      "특강료": [
+        "기술정보활동비 지급신청서",
+        "비정기 강의계획서",
+        "개인정보 제공·활용 동의서",
+        "참여학생명단",
+        "출석부",
+        "재직·경력증명서",
+        "계좌입금통장 사본",
+        "특강자료 및 특강사진"
+      ],
+      "심사료": [
+        "심사 관련 자료",
+        "심사표 또는 평가 결과",
+        "개인정보 제공·활용 동의서",
+        "재직·경력증명서",
+        "계좌입금통장 사본"
+      ]
+    };
+
+    const $ = id => document.getElementById(id);
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function unique(values) {
+      return [...new Set(values)];
+    }
+
+    function won(value) {
+      return `${Number(value || 0).toLocaleString("ko-KR")}원`;
+    }
+
+    function toast(message) {
+      $("toast").textContent = message;
+      $("toast").classList.add("show");
+
+      clearTimeout(window.toastTimer);
+
+      window.toastTimer = setTimeout(() => {
+        $("toast").classList.remove("show");
+      }, 3500);
+    }
+
+    function showPage(pageId) {
+      document.querySelectorAll(".page").forEach(page => {
+        page.classList.remove("active");
+      });
+
+      $(pageId).classList.add("active");
+    }
+
+    function statusBadge(status) {
+      let className = "badge-gray";
+
+      if (status === "AI 검토중") className = "badge-blue";
+      if (status === "AI 검수 완료") className = "badge-green";
+      if (status === "보완 요청") className = "badge-orange";
+      if (status === "지급 승인") className = "badge-green";
+
+      return `<span class="badge ${className}">${escapeHtml(status)}</span>`;
+    }
+
+    function setOptions(id, values, valueFunction, textFunction) {
+      $(id).innerHTML = values.map(value => `
+        <option value="${escapeHtml(valueFunction(value))}">
+          ${escapeHtml(textFunction(value))}
+        </option>
+      `).join("");
+    }
+
+    async function signUp() {
+      const email = $("email").value.trim();
+      const password = $("password").value;
+
+      if (!email || !password) {
+        toast("이메일과 비밀번호를 입력하세요.");
+        return;
+      }
+
+      const { error } = await sb.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: email.split("@")[0]
+          }
+        }
+      });
+
+      toast(
+        error
+          ? error.message
+          : "회원가입이 완료되었습니다. 이메일 인증 설정 시 인증 후 로그인하세요."
+      );
+    }
+
+    async function signIn() {
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: $("email").value.trim(),
+        password: $("password").value
+      });
+
+      if (error) {
+        toast(error.message);
+        return;
+      }
+
+      currentUser = data.user;
+      await loadProfile();
+      openRoleSelect();
+    }
+
+    async function logout() {
+      clearInterval(pollingTimer);
+
+      await sb.auth.signOut();
+
+      currentUser = null;
+      currentProfile = null;
+      requestItems = [];
+
+      $("logoutButton").classList.add("hidden");
+      showPage("loginPage");
+    }
+
+    async function loadProfile() {
+      const { data, error } = await sb
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      currentProfile = data;
+    }
+
+    function openRoleSelect() {
+      $("logoutButton").classList.remove("hidden");
+
+      $("userInfo").textContent =
+        `${currentProfile.name} · ${
+          currentProfile.role === "manager"
+            ? "사업담당자"
+            : "교수자"
+        }`;
+
+      $("managerRoleCard").classList.toggle(
+        "hidden",
+        currentProfile.role !== "manager"
+      );
+
+      showPage("rolePage");
+    }
+
+    async function openRole(role) {
+      if (role === "manager" && currentProfile.role !== "manager") {
+        toast("사업담당자 권한이 없습니다.");
+        return;
+      }
+
+      await loadRequests(role === "manager");
+
+      if (role === "professor") {
+        renderProfessor();
+        showPage("professorPage");
+      } else {
+        renderManager();
+        showPage("managerPage");
+      }
+
+      clearInterval(pollingTimer);
+
+      pollingTimer = setInterval(async () => {
+        await loadRequests(role === "manager");
+
+        if (role === "professor") {
+          renderProfessor();
+        } else {
+          renderManager();
+        }
+      }, 10000);
+    }
+
+    async function loadRequests(allRequests) {
+      let query = sb
+        .from("expense_requests")
+        .select("*, expense_files(*)")
+        .order("created_at", { ascending: false });
+
+      if (!allRequests) {
+        query = query.eq("user_id", currentUser.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        toast(`목록 조회 실패: ${error.message}`);
+        return;
+      }
+
+      requestItems = data.map(item => ({
+        id: item.id,
+        receiptNo: item.receipt_no,
+        applicant: item.applicant_name,
+        business: item.business_name,
+        programType: item.program_type,
+        programCode: item.program_code,
+        programName: item.program_name,
+        professor: item.assigned_professor,
+        department: item.department,
+        expenseCategory: item.expense_category,
+        expenseSubItem: item.expense_sub_item,
+        totalAmount: item.total_amount,
+        expectedDocuments: item.expected_documents || [],
+        memo: item.memo || "",
+        status: item.status,
+        aiResult: item.ai_result,
+        managerComment: item.manager_comment || "",
+        createdDate: new Date(item.created_at).toLocaleDateString("ko-KR"),
+        files: (item.expense_files || []).map(file => ({
+          id: file.id,
+          documentName: file.document_name,
+          originalName: file.original_name,
+          storagePath: file.storage_path,
+          fileSize: file.file_size,
+          mimeType: file.mime_type
+        }))
+      }));
+    }
+
+    function initializeForm() {
+      const businesses = unique(PROGRAMS.map(item => item.business));
+
+      setOptions(
+        "business",
+        businesses,
+        value => value,
+        value => value
+      );
+
+      renderProgramTypes();
+    }
+
+    function renderProgramTypes() {
+      const business = $("business").value;
+
+      const types = unique(
+        PROGRAMS
+          .filter(item => item.business === business)
+          .map(item => item.type)
+      );
+
+      setOptions(
+        "programType",
+        types,
+        value => value,
+        value => value
+      );
+
+      renderProgramCodes();
+    }
+
+    function renderProgramCodes() {
+      const programs = PROGRAMS.filter(item =>
+        item.business === $("business").value &&
+        item.type === $("programType").value
+      );
+
+      setOptions(
+        "programCode",
+        programs,
+        item => item.code,
+        item => `${item.code} - ${item.name}`
+      );
+
+      renderExpenseCategories();
+    }
+
+    function selectedProgram() {
+      return PROGRAMS.find(
+        item => item.code === $("programCode").value
+      );
+    }
+
+    function renderExpenseCategories() {
+      const program = selectedProgram();
+
+      $("professorDepartment").value =
+        `${program.professor} 교수 / ${program.department}`;
+
+      const categories = PROGRAM_RULES[program.type] || [
+        "promotion",
+        "public",
+        "activity"
+      ];
+
+      setOptions(
+        "expenseCategory",
+        categories,
+        value => value,
+        value => CATEGORY_LABELS[value]
+      );
+
+      renderSubItems();
+    }
+
+    function renderSubItems() {
+      const category = $("expenseCategory").value;
+
+      let subItems = ["해당 없음"];
+
+      if (category === "public") {
+        subItems = PUBLIC_SUB_ITEMS;
+      }
+
+      if (category === "activity") {
+        subItems = ACTIVITY_SUB_ITEMS;
+      }
+
+      setOptions(
+        "expenseSubItem",
+        subItems,
+        value => value,
+        value => value
+      );
+
+      $("expenseSubItem").disabled =
+        !["public", "activity"].includes(category);
+
+      renderDocuments();
+    }
+
+    function currentDocuments() {
+      const categoryName = CATEGORY_LABELS[$("expenseCategory").value];
+      const subItem = $("expenseSubItem").value;
+
+      return DOCUMENTS[subItem] ||
+        DOCUMENTS[categoryName] ||
+        [];
+    }
+
+    function renderDocuments() {
+      const docs = currentDocuments();
+
+      $("documentGuide").innerHTML = `
+        <strong>AI 검토 대상 증빙서류</strong><br>
+        ${docs.map(escapeHtml).join(", ")}<br>
+        PDF, JPG, PNG 파일을 권장합니다. 파일 1개당 최대 12MB입니다.
+      `;
+
+      $("documentList").innerHTML = docs.map((doc, index) => `
+        <div class="doc-item">
+          <strong>${escapeHtml(doc)}</strong>
+          <input
+            id="fileInput${index}"
+            type="file"
+            multiple
+            accept=".pdf,image/jpeg,image/png"
+          >
+        </div>
+      `).join("");
+    }
+
+    function openForm() {
+      editingRequestId = null;
+
+      $("formTitle").textContent = "지출서류 신청";
+      $("totalAmount").value = "";
+      $("memo").value = "";
+      $("existingFiles").innerHTML = "";
+      $("existingFiles").classList.add("hidden");
+
+      initializeForm();
+
+      $("professorDetail").classList.add("hidden");
+      $("formBox").classList.remove("hidden");
+
+      $("formBox").scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+
+    function getNewFiles() {
+      const files = [];
+      const docs = currentDocuments();
+
+      docs.forEach((doc, index) => {
+        const input = $(`fileInput${index}`);
+
+        if (!input) return;
+
+        [...input.files].forEach(file => {
+          files.push({
+            documentName: doc,
+            file
+          });
+        });
+      });
+
+      return files;
+    }
+
+    async function uploadFiles(requestId) {
+      const files = getNewFiles();
+
+      for (const item of files) {
+        if (item.file.size > 12 * 1024 * 1024) {
+          throw new Error(
+            `${item.file.name} 파일은 12MB를 초과합니다.`
+          );
+        }
+
+        const safeName = item.file.name
+          .replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
+
+        const storagePath =
+          `${currentUser.id}/${requestId}/${Date.now()}_${safeName}`;
+
+        const { error: uploadError } = await sb.storage
+          .from("expense-files")
+          .upload(storagePath, item.file, {
+            upsert: false
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { error: insertError } = await sb
+          .from("expense_files")
+          .insert({
+            request_id: requestId,
+            user_id: currentUser.id,
+            document_name: item.documentName,
+            original_name: item.file.name,
+            storage_path: storagePath,
+            file_size: item.file.size,
+            mime_type: item.file.type
+          });
+
+        if (insertError) {
+          throw insertError;
+        }
+      }
+    }
+
+    async function saveRequest(status) {
+      try {
+        const program = selectedProgram();
+
+        const payload = {
+          applicant_name: currentProfile.name,
+          business_name: program.business,
+          program_type: program.type,
+          program_code: program.code,
+          program_name: program.name,
+          assigned_professor: program.professor,
+          department: program.department,
+          expense_category: CATEGORY_LABELS[$("expenseCategory").value],
+          expense_sub_item: $("expenseSubItem").value,
+          total_amount: Number($("totalAmount").value || 0),
+          expected_documents: currentDocuments(),
+          memo: $("memo").value,
+          status,
+          ai_result: null,
+          manager_comment: null,
+          updated_at: new Date().toISOString()
+        };
+
+        let savedRequest;
+
+        if (editingRequestId) {
+          const { data, error } = await sb
+            .from("expense_requests")
+            .update(payload)
+            .eq("id", editingRequestId)
+            .eq("user_id", currentUser.id)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          savedRequest = data;
+        } else {
+          const { data, error } = await sb
+            .from("expense_requests")
+            .insert({
+              ...payload,
+              user_id: currentUser.id,
+              receipt_no: `INNO-2026-${String(Date.now()).slice(-8)}`
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          savedRequest = data;
+        }
+
+        await uploadFiles(savedRequest.id);
+
+        editingRequestId = null;
+        $("formBox").classList.add("hidden");
+
+        await loadRequests(false);
+        renderProfessor();
+
+        if (status === "AI 검토중") {
+          toast("AI 검토 요청이 접수되었습니다.");
+          requestAiReview(savedRequest.id);
+        } else {
+          toast("임시저장되었습니다.");
+        }
+      } catch (error) {
+        toast(`저장 실패: ${error.message}`);
+      }
+    }
+
+    async function requestAiReview(requestId) {
+      try {
+        const {
+          data: { session }
+        } = await sb.auth.getSession();
+
+        const response = await fetch(
+          "/.netlify/functions/ai-review",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ requestId })
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "AI 검토 실패");
+        }
+
+        await loadRequests(false);
+        renderProfessor();
+
+        toast(
+          result.status === "AI 검수 완료"
+            ? "AI 검토가 완료되었습니다."
+            : "AI 검토 결과 보완이 필요합니다."
+        );
+      } catch (error) {
+        await sb
+          .from("expense_requests")
+          .update({
+            status: "보완 요청",
+            manager_comment: `AI 검토 오류: ${error.message}`,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", requestId)
+          .eq("user_id", currentUser.id);
+
+        await loadRequests(false);
+        renderProfessor();
+
+        toast("AI 검토 오류가 발생했습니다.");
+      }
+    }
+
+    function renderProfessor() {
+      $("pTotal").textContent = `${requestItems.length}건`;
+      $("pDraft").textContent =
+        `${requestItems.filter(item => item.status === "임시저장").length}건`;
+      $("pReviewing").textContent =
+        `${requestItems.filter(item => item.status === "AI 검토중").length}건`;
+      $("pSupplement").textContent =
+        `${requestItems.filter(item => item.status === "보완 요청").length}건`;
+
+      $("professorList").innerHTML = requestItems.length
+        ? requestItems.map(item => {
+          let action = `
+            <button class="btn-gray" onclick="viewProfessorRequest('${item.id}')">
+              상세보기
+            </button>
+          `;
+
+          if (item.status === "임시저장") {
+            action = `
+              <button class="btn-primary" onclick="editRequest('${item.id}')">
+                작성 계속
+              </button>
+            `;
+          }
+
+          if (item.status === "보완 요청") {
+            action = `
+              <button class="btn-orange" onclick="editRequest('${item.id}')">
+                보완하기
+              </button>
+            `;
+          }
+
+          return `
+            <tr>
+              <td>${escapeHtml(item.receiptNo)}</td>
+              <td>${escapeHtml(item.createdDate)}</td>
+              <td>${escapeHtml(item.programCode)}</td>
+              <td>${escapeHtml(item.professor)} 교수 / ${escapeHtml(item.department)}</td>
+              <td>${escapeHtml(item.expenseCategory)}</td>
+              <td>${won(item.totalAmount)}</td>
+              <td>${statusBadge(item.status)}</td>
+              <td>${action}</td>
+            </tr>
+          `;
+        }).join("")
+        : `
+          <tr>
+            <td colspan="8" style="text-align:center;padding:25px;">
+              신청 내역이 없습니다.
+            </td>
+          </tr>
+        `;
+    }
+
+    function detailHtml(item) {
+      return `
+        <dt>접수번호</dt>
+        <dd>${escapeHtml(item.receiptNo)}</dd>
+
+        <dt>신청자</dt>
+        <dd>${escapeHtml(item.applicant)}</dd>
+
+        <dt>사업코드</dt>
+        <dd>${escapeHtml(item.programCode)} - ${escapeHtml(item.programName)}</dd>
+
+        <dt>담당교수 / 학과</dt>
+        <dd>${escapeHtml(item.professor)} 교수 / ${escapeHtml(item.department)}</dd>
+
+        <dt>집행비목</dt>
+        <dd>${escapeHtml(item.expenseCategory)} / ${escapeHtml(item.expenseSubItem)}</dd>
+
+        <dt>신청금액</dt>
+        <dd>${won(item.totalAmount)}</dd>
+
+        <dt>상태</dt>
+        <dd>${statusBadge(item.status)}</dd>
+
+        <dt>비고</dt>
+        <dd>${escapeHtml(item.memo || "-")}</dd>
+      `;
+    }
+
+    function filesHtml(files, editable = false) {
+      if (!files.length) {
+        return `<p class="subtext">첨부파일이 없습니다.</p>`;
+      }
+
+      return files.map(file => `
+        <div class="file-row">
+          <div>
+            <strong>${escapeHtml(file.documentName)}</strong><br>
+            <span class="subtext">${escapeHtml(file.originalName)}</span>
+          </div>
+
+          <div>
+            <button
+              class="btn-gray"
+              onclick="downloadFile('${file.storagePath}')"
+            >
+              다운로드
+            </button>
+
+            ${editable ? `
+              <button
+                class="btn-red"
+                onclick="deleteFile('${file.id}', '${file.storagePath}')"
+              >
+                삭제
+              </button>
+            ` : ""}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function downloadFile(storagePath) {
+      const { data, error } = await sb.storage
+        .from("expense-files")
+        .createSignedUrl(storagePath, 60);
+
+      if (error) {
+        toast(error.message);
+        return;
+      }
+
+      window.open(data.signedUrl, "_blank");
+    }
+
+    async function deleteFile(fileId, storagePath) {
+      if (!confirm("첨부파일을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.")) {
+        return;
+      }
+
+      try {
+        const { error: storageError } = await sb.storage
+          .from("expense-files")
+          .remove([storagePath]);
+
+        if (storageError) throw storageError;
+
+        const { error: dbError } = await sb
+          .from("expense_files")
+          .delete()
+          .eq("id", fileId)
+          .eq("user_id", currentUser.id);
+
+        if (dbError) throw dbError;
+
+        await loadRequests(false);
+
+        const item = requestItems.find(
+          request => request.id === editingRequestId
+        );
+
+        if (item) {
+          $("existingFiles").innerHTML = filesHtml(item.files, true);
+        }
+
+        toast("첨부파일이 삭제되었습니다.");
+      } catch (error) {
+        toast(`파일 삭제 실패: ${error.message}`);
+      }
+    }
+
+    function aiResultHtml(item) {
+      if (item.status === "AI 검토중") {
+        return `
+          <div class="review-box">
+            <strong>AI 증빙서류 검토 진행 중</strong>
+            <p>
+              업로드한 증빙파일을 기반으로 사업코드, 날짜, 금액,
+              수신처, 계좌번호, 서명 존재 여부 등을 검토 중입니다.
+            </p>
+          </div>
+        `;
+      }
+
+      const result = item.aiResult;
+
+      if (!result) {
+        return `
+          <div class="review-box">
+            AI 검토 결과가 없습니다.
+          </div>
+        `;
+      }
+
+      const findingsHtml = (result.findings || []).map(finding => {
+        let badgeClass = "badge-orange";
+
+        if (finding.type === "정상") badgeClass = "badge-green";
+        if (finding.type === "담당자 확인 필요") badgeClass = "badge-blue";
+
+        return `
+          <div class="finding">
+            <p style="margin:0 0 8px;">
+              <span class="badge ${badgeClass}">
+                ${escapeHtml(finding.type)}
+              </span>
+              <strong style="margin-left:6px;">
+                ${escapeHtml(finding.title)}
+              </strong>
+            </p>
+
+            <div>${escapeHtml(finding.detail)}</div>
+
+            ${
+              finding.related_documents?.length
+                ? `
+                  <p class="subtext">
+                    관련 문서: ${escapeHtml(finding.related_documents.join(", "))}
+                  </p>
+                `
+                : ""
+            }
+          </div>
+        `;
+      }).join("");
+
+      const documentSummaryHtml = (result.document_summary || []).length
+        ? `
+          <div class="table-box" style="margin-top:10px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>문서</th>
+                  <th>사업코드</th>
+                  <th>날짜</th>
+                  <th>금액</th>
+                  <th>수신처</th>
+                  <th>검토 메모</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${result.document_summary.map(document => `
+                  <tr>
+                    <td>
+                      ${escapeHtml(document.document_name)}<br>
+                      <span class="subtext">${escapeHtml(document.file_name)}</span>
+                    </td>
+                    <td>${escapeHtml(document.business_code)}</td>
+                    <td>${escapeHtml(document.date)}</td>
+                    <td>${escapeHtml(document.amount)}</td>
+                    <td>${escapeHtml(document.receiver)}</td>
+                    <td>${escapeHtml(document.notes)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `
+        : `<p class="subtext">문서별 분석 정보가 없습니다.</p>`;
+
+      return `
+        <div class="review-box">
+          <p>
+            <strong>AI 검토 상태:</strong>
+            ${statusBadge(item.status)}
+          </p>
+
+          <p>
+            <strong>검토 점수:</strong>
+            ${escapeHtml(result.score)}점 / 100점
+          </p>
+
+          <p><strong>검토 요약</strong></p>
+          <p>${escapeHtml(result.summary)}</p>
+
+          <p><strong>정상 확인 항목</strong></p>
+          <ul>
+            ${
+              (result.checked || []).length
+                ? result.checked.map(value => `<li>${escapeHtml(value)}</li>`).join("")
+                : "<li>없음</li>"
+            }
+          </ul>
+
+          <p><strong>보완 또는 확인 필요 항목</strong></p>
+          <ul>
+            ${
+              (result.missing_or_unclear || []).length
+                ? result.missing_or_unclear.map(value => `<li>${escapeHtml(value)}</li>`).join("")
+                : "<li>없음</li>"
+            }
+          </ul>
+
+          <hr>
+
+          <p><strong>상세 검토 결과</strong></p>
+          ${findingsHtml || "<p>상세 검토 결과가 없습니다.</p>"}
+
+          <hr>
+
+          <p><strong>문서별 추출 및 비교 정보</strong></p>
+          ${documentSummaryHtml}
+
+          <p class="subtext" style="margin-top:15px;">
+            ${escapeHtml(result.caution || "")}
+          </p>
+
+          ${
+            item.managerComment
+              ? `
+                <hr>
+                <p><strong>사업담당자 의견</strong></p>
+                <p>${escapeHtml(item.managerComment)}</p>
+              `
+              : ""
+          }
+        </div>
+      `;
+    }
+
+    function viewProfessorRequest(id) {
+      const item = requestItems.find(request => request.id === id);
+
+      if (!item) return;
+
+      selectedRequestId = id;
+
+      $("professorInfo").innerHTML = detailHtml(item);
+      $("professorFiles").innerHTML = filesHtml(item.files);
+      $("professorAiResult").innerHTML = aiResultHtml(item);
+
+      $("professorEditButton").classList.toggle(
+        "hidden",
+        !["보완 요청", "임시저장"].includes(item.status)
+      );
+
+      $("formBox").classList.add("hidden");
+      $("professorDetail").classList.remove("hidden");
+
+      $("professorDetail").scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+
+    function editSelectedRequest() {
+      if (selectedRequestId) {
+        editRequest(selectedRequestId);
+      }
+    }
+
+    function editRequest(id) {
+      const item = requestItems.find(request => request.id === id);
+
+      if (!item) return;
+
+      editingRequestId = id;
+
+      $("formTitle").textContent =
+        item.status === "보완 요청"
+          ? "서류 보완 / 수정 후 재제출"
+          : "지출서류 신청 수정";
+
+      initializeForm();
+
+      $("business").value = item.business;
+      renderProgramTypes();
+
+      $("programType").value = item.programType;
+      renderProgramCodes();
+
+      $("programCode").value = item.programCode;
+      renderExpenseCategories();
+
+      const categoryKey = Object.keys(CATEGORY_LABELS).find(
+        key => CATEGORY_LABELS[key] === item.expenseCategory
+      );
+
+      $("expenseCategory").value = categoryKey;
+      renderSubItems();
+
+      $("expenseSubItem").value = item.expenseSubItem;
+      renderDocuments();
+
+      $("totalAmount").value = item.totalAmount || "";
+      $("memo").value = item.memo || "";
+
+      $("professorDepartment").value =
+        `${item.professor} 교수 / ${item.department}`;
+
+      $("existingFiles").innerHTML = `
+        <div class="guide">
+          <strong>기존 첨부파일</strong><br>
+          잘못 첨부한 파일은 삭제할 수 있습니다.
+          새로 선택하는 파일은 기존 파일에 추가됩니다.
+        </div>
+        ${filesHtml(item.files, true)}
+      `;
+
+      $("existingFiles").classList.remove("hidden");
+
+      $("professorDetail").classList.add("hidden");
+      $("formBox").classList.remove("hidden");
+
+      $("formBox").scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+
+    function renderManager() {
+      const visibleItems = requestItems.filter(
+        item => item.status !== "임시저장"
+      );
+
+      $("mTotal").textContent = `${visibleItems.length}건`;
+      $("mReviewing").textContent =
+        `${visibleItems.filter(item => item.status === "AI 검토중").length}건`;
+      $("mSupplement").textContent =
+        `${visibleItems.filter(item => item.status === "보완 요청").length}건`;
+      $("mApproved").textContent =
+        `${visibleItems.filter(item => item.status === "지급 승인").length}건`;
+
+      $("managerList").innerHTML = visibleItems.length
+        ? visibleItems.map(item => `
+          <tr>
+            <td>${escapeHtml(item.receiptNo)}</td>
+            <td>${escapeHtml(item.applicant)}</td>
+            <td>${escapeHtml(item.programCode)}</td>
+            <td>${escapeHtml(item.professor)} 교수 / ${escapeHtml(item.department)}</td>
+            <td>${escapeHtml(item.expenseCategory)}</td>
+            <td>${won(item.totalAmount)}</td>
+            <td>${statusBadge(item.status)}</td>
+            <td>
+              <button
+                class="btn-primary"
+                onclick="viewManagerRequest('${item.id}')"
+              >
+                AI결과 / 검토
+              </button>
+            </td>
+          </tr>
+        `).join("")
+        : `
+          <tr>
+            <td colspan="8" style="text-align:center;padding:25px;">
+              검토 요청된 신청서가 없습니다.
+            </td>
+          </tr>
+        `;
+    }
+
+    function viewManagerRequest(id) {
+      const item = requestItems.find(request => request.id === id);
+
+      if (!item) return;
+
+      selectedRequestId = id;
+
+      $("managerInfo").innerHTML = detailHtml(item);
+      $("managerFiles").innerHTML = filesHtml(item.files);
+      $("managerAiResult").innerHTML = aiResultHtml(item);
+      $("managerComment").value = item.managerComment || "";
+
+      $("managerDetail").classList.remove("hidden");
+
+      $("managerDetail").scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+
+    async function managerAction(status) {
+      if (!selectedRequestId) return;
+
+      const { error } = await sb
+        .from("expense_requests")
+        .update({
+          status,
+          manager_comment: $("managerComment").value,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", selectedRequestId);
+
+      if (error) {
+        toast(error.message);
+        return;
+      }
+
+      await loadRequests(true);
+      renderManager();
+      viewManagerRequest(selectedRequestId);
+
+      toast(`${status} 처리되었습니다.`);
+    }
+
+    async function initializeApp() {
+      const {
+        data: { session }
+      } = await sb.auth.getSession();
+
+      if (!session) {
+        showPage("loginPage");
+        return;
+      }
+
+      currentUser = session.user;
+      await loadProfile();
+      openRoleSelect();
+    }
+
+    initializeApp();
+  </script>
+</body>
+</html>
